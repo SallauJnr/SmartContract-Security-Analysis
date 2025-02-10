@@ -1,0 +1,108 @@
+import random
+import time
+import numpy as np
+
+class EthereumBlockchain:
+    def __init__(self):
+        self.gas_used = 0
+
+    def log_prediction(self, data):
+        time.sleep(random.uniform(0.1, 0.3))  # Simulating delay
+        self.gas_used += random.randint(100000, 200000)
+        return random.uniform(0.1, 0.3)
+
+class HyperledgerBlockchain:
+    def __init__(self):
+        self.energy_consumed = 0
+
+    def log_prediction(self, data):
+        time.sleep(random.uniform(0.05, 0.15))
+        self.energy_consumed += random.uniform(0.01, 0.05)
+        return random.uniform(0.05, 0.15)
+
+class LightweightBlockchain:
+    def __init__(self):
+        self.energy_consumed = 0
+
+    def log_prediction(self, data):
+        time.sleep(random.uniform(0.02, 0.1))
+        self.energy_consumed += random.uniform(0.005, 0.02)
+        return random.uniform(0.02, 0.1)
+
+def calculate_scalability(blockchain_type):
+    """Compute scalability score based on latency and resource consumption."""
+    weights = {
+        "Ethereum": (0.7, 0.3), 
+        "Hyperledger": (0.6, 0.4),
+        "Lightweight": (0.5, 0.5)
+    }
+    
+    latency_ranges = {
+        "Ethereum": (0.1, 0.3),
+        "Hyperledger": (0.05, 0.15),
+        "Lightweight": (0.02, 0.1)
+    }
+    
+    resource_ranges = {
+        "Ethereum": (100000, 200000),
+        "Hyperledger": (0.01, 0.05),
+        "Lightweight": (0.005, 0.02)
+    }
+    
+    if blockchain_type not in weights:
+        return 1.0  # Default for unknown types
+    
+    resource_weight, latency_weight = weights[blockchain_type]
+    
+    avg_latency = np.mean([random.uniform(*latency_ranges[blockchain_type]) for _ in range(100)])
+    avg_resource = np.mean([random.uniform(*resource_ranges[blockchain_type]) for _ in range(100)])
+    
+    max_resource = resource_ranges[blockchain_type][1]
+    max_latency = latency_ranges[blockchain_type][1]
+
+    scalability = (1 - (resource_weight * (avg_resource / max_resource))) + (latency_weight * (1 - (avg_latency / max_latency)))
+    
+    return scalability
+
+def calculate_metrics(latencies, tx_count, blockchain_type, energy_consumed=None):
+    """Compute throughput, latency, scalability, and energy consumption."""
+    throughput = tx_count / sum(latencies) if latencies else 0
+    avg_latency = np.mean(latencies) if latencies else 0
+    scalability = calculate_scalability(blockchain_type)
+    
+    metrics = {
+        "Throughput": round(throughput, 2),
+        "Avg Latency (s)": round(avg_latency, 4),
+        "Scalability": round(scalability, 4)
+    }
+    
+    if energy_consumed is not None:
+        metrics["Energy (kWh)"] = round(energy_consumed, 2)
+    
+    return metrics
+
+# Initialize Blockchain Instances
+eth_blockchain = EthereumBlockchain()
+hl_blockchain = HyperledgerBlockchain()
+lb_blockchain = LightweightBlockchain()
+
+# Sample Predictions
+predictions = ["Normal", "Attack"] * 5000
+
+# Simulate Transactions for Metrics
+num_transactions = 1000
+
+# Vectorized Latency Computation
+eth_latencies = np.array([eth_blockchain.log_prediction(str(p).encode('utf-8')) for p in predictions[:num_transactions]])
+hl_latencies = np.array([hl_blockchain.log_prediction(str(p).encode('utf-8')) for p in predictions[:num_transactions]])
+lb_latencies = np.array([lb_blockchain.log_prediction(str(p).encode('utf-8')) for p in predictions[:num_transactions]])
+
+# Calculate Metrics
+eth_metrics = calculate_metrics(eth_latencies, num_transactions, "Ethereum", energy_consumed=eth_blockchain.gas_used * 0.00001)
+hl_metrics = calculate_metrics(hl_latencies, num_transactions, "Hyperledger", energy_consumed=hl_blockchain.energy_consumed)
+lb_metrics = calculate_metrics(lb_latencies, num_transactions, "Lightweight", energy_consumed=lb_blockchain.energy_consumed)
+
+# Print Results
+print("Ethereum Blockchain Metrics:", eth_metrics)
+print("Hyperledger Blockchain Metrics:", hl_metrics)
+print("Lightweight Blockchain Metrics:", lb_metrics)
